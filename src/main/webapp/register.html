@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>注册</title>
+        <link rel="stylesheet" type="text/css" href="css/common.css">
+        <link rel="stylesheet" href="css/register.css">
+		<style>
+			.showMsg {
+				color: red;
+				text-align: center;
+				padding-top: 18px;
+			}
+		</style>
+		<!--导入jquery-->
+		<script src="js/jquery-3.3.1.js"></script>
+		<script>
+			function checkUsername() {
+				var regx=/^\w{2,8}$/;
+                var username=$("#username").val();
+                var flag=regx.test(username);
+                if (flag){
+                    var flag1;
+                    $.ajax({
+						type:"get",
+						url:"user/checkUsernaem",
+						data:{"username":username},
+						async:false,
+						success:function (data) {
+                            if (data=='Y'){
+                                $("#showMsg").html("该用户名已存在");
+                                $("#username").css("border","1px solid red");
+                                flag1=false;
+                            }else {
+                                $("#showMsg").html("该用户名可用");
+                                $("#username").css("border","");
+                                flag1=true;
+                            }
+                        }
+					});
+                    /*$.post("checkUsernaem",{"username":username},function (data) {
+						if (data=='Y'){
+                            $("#username").css("border","1px solid red");
+                            flag1=false;
+						}else {
+                            $("#username").css("border","");
+                            flag1=true;
+						}
+                    });*/
+                   return flag1;
+                }else {
+                    $("#showMsg").html("用户名格式错误，要求2-8位单词字符");
+                    $("#username").css("border","1px solid red");
+                    return false;
+                }
+            }
+            function checkpassword() {
+                var regx=/^\w{5,12}$/;
+                var password = $("#password").val();
+                var flag = regx.test(password);
+                if (flag){
+                    $("#showMsg").html("提示信息")
+                    $("#password").css("border","")
+                    return true;
+                }else {
+                    $("#showMsg").html("密码格式不对，要求5-12位单词字符")
+                    $("#password").css("border","1px solid red")
+                    return false;
+                }
+            }
+            function checkemail() {
+                var regx=/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+                var email = $("#email").val();
+                var flag = regx.test(email);
+                if (flag){
+                    $("#showMsg").html("提示信息")
+                    $("#email").css("border","")
+                    return true;
+                }else {
+                    $("#showMsg").html("邮箱填写不合法，要求含有@符号")
+                    $("#email").css("border","1px solid red")
+                    return false;
+                }
+            }
+            function checkname() {
+                var regx=/^[\u4e00-\u9fa5]{2,5}$/;
+                var name = $("#name").val();
+                var flag = regx.test(name);
+                if (flag){
+                    $("#showMsg").html("提示信息")
+                    $("#name").css("border","")
+                    return true;
+                }else {
+                    $("#showMsg").html("姓名填写不合法，要求2-5位中文字符")
+                    $("#name").css("border","1px solid red")
+                    return false;
+                }
+            }
+            function checktelephone() {
+                var regx=/^1\d{10}$/;
+                var telephone = $("#telephone").val();
+                var flag = regx.test(telephone);
+                if (flag){
+                    $("#showMsg").html("提示信息")
+                    $("#telephone").css("border","")
+                    return true;
+                }else {
+                    $("#showMsg").html("手机号不能为空，要求以1开头总11位数字字符")
+                    $("#telephone").css("border","1px solid red")
+                    return false;
+                }
+            }
+            function checkbirthday() {
+                var birthday = $("#birthday").val();
+                if (birthday!=''){
+                    $("#showMsg").html("提示信息")
+                    $("#birthday").css("border","")
+                    return true;
+                }else {
+                    $("#showMsg").html("生日不能为空")
+                    $("#birthday").css("border","1px solid red")
+                    return false;
+                }
+            }
+            function checkcheck() {
+                var check = $("#check").val();
+                if (check!=''){
+                    $("#showMsg").html("提示信息")
+                    $("#check").css("border","")
+                    return true;
+                }else {
+                    $("#showMsg").html("验证码不能为空")
+                    $("#check").css("border","1px solid red")
+                    return false;
+                }
+            }
+			$(function () {
+                /*鼠标失去焦点校验*/
+                $("#username").blur(checkUsername);
+                $("#password").blur(checkpassword);
+                $("#email").blur(checkemail);
+                $("#name").blur(checkname);
+                $("#telephone").blur(checktelephone);
+                $("#birthday").blur(checkbirthday);
+                $("#check").blur(checkcheck);
+                $("#showMsg").addClass("showMsg");
+			    /*$("#username").focus(function () {
+					$("#usernameMsg").html("6-8位单词字符");
+                });*/
+				$("#registerForm").submit(function () {
+				    var data=$("#registerForm").serialize();
+				   /*校验*/
+				    if (checkUsername()&&checkpassword()&&checkemail()
+                        &&checkname()&&checktelephone()&&checkbirthday()&&checkcheck()){
+                        $.post("user/registerUser",data,function (data) {
+                            if (data=='true'){
+                                location.href="register_ok.html";
+							}else {
+                                $("#showMsg").html(data);
+							}
+                        });
+					}
+					return false;
+                });
+            });
+		</script>
+    </head>
+	<body>
+	<!--引入头部-->
+	<div id="header"></div>
+        <!-- 头部 end -->
+    	<div class="rg_layout">
+    		<div class="rg_form clearfix">
+    			<div class="rg_form_left">
+    				<p>新用户注册</p>
+    				<p>USER REGISTER</p>
+    			</div>
+    			<div class="rg_form_center">
+					<div id="showMsg"></div>
+					<!--注册表单-->
+    				<form id="registerForm">
+						<!--提交处理请求的标识符-->
+						<input type="hidden" name="action" value="register">
+    					<table style="margin-top: 25px;">
+    						<tr>
+    							<td class="td_left">
+    								<label for="username">用户名</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="username" name="username" placeholder="请输入账号">
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="password">密码</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="password" name="password" placeholder="请输入密码">
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="email">Email</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="email" name="email" placeholder="请输入Email">
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="name">姓名</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="name" name="name" placeholder="请输入真实姓名">
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="telephone">手机号</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="telephone" name="telephone" placeholder="请输入您的手机号">
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="sex">性别</label>
+    							</td>
+    							<td class="td_right gender">
+    								<input type="radio" id="sex" name="sex" value="男" checked> 男
+    								<input type="radio" name="sex" value="女"> 女
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="birthday">出生日期</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="date" id="birthday" name="birthday" placeholder="年/月/日">
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="check">验证码</label>
+    							</td>
+    							<td class="td_right check">
+    								<input type="text" id="check" name="check" class="check">
+    								<img src="checkCode" height="32px" alt="" onclick="changeCheckCode(this)">
+									<script type="text/javascript">
+										//图片点击事件
+										function changeCheckCode(img) {
+											img.src="checkCode?"+new Date().getTime();
+                                        }
+									</script>
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left"> 
+    							</td>
+    							<td class="td_right check"> 
+    								<input type="submit" class="submit" value="注册">
+									<span id="msg" style="color: red;"></span>
+    							</td>
+    						</tr>
+    					</table>
+    				</form>
+    			</div>
+    			<div class="rg_form_right">
+    				<p>
+    					已有账号？
+    					<a href="login.html">立即登录</a>
+    				</p>
+    			</div>
+    		</div>
+    	</div>
+        <!--引入尾部-->
+    	<div id="footer"></div>
+		<!--导入布局js，共享header和footer-->
+		<script type="text/javascript" src="js/include.js"></script>
+    	
+    </body>
+</html>

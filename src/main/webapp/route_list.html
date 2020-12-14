@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>中软旅游-搜索</title>
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" href="css/search.css">
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/getParameter.js"></script>
+    <script>
+        $(function () {
+            var cid = getParameter("cid");
+            var rname = getParameter("rname");
+            if(rname){
+                //url解码
+                rname = window.decodeURIComponent(rname);
+            }
+            var currentPage = getParameter("currentPage");
+            var pageSize = getParameter("pageSize");
+            $.post("route/getRouteByCid",{currentPage:currentPage,pageSize:pageSize,cid:cid,rname:rname},function (data) {
+                var lis="";
+                for(var i=0;i<data.dataList.length;i++){
+                    var ele=data.dataList[i];
+                    lis+='<li>\n' +
+                        '    <div class="img"><img width="299px" src="'+ele.rimage+'" alt=""></div>\n' +
+                        '       <div class="text1">\n' +
+                        '          <p>'+ele.rname+'</p>\n' +
+                        '          <br/>\n' +
+                        '          <p>'+ele.routeIntroduce+'</p>\n' +
+                        '       </div>\n' +
+                        '       <div class="price">\n' +
+                        '          <p class="price_num">\n' +
+                        '          <span>&yen;</span>\n' +
+                        '          <span>'+ele.price+'</span>\n' +
+                        '          <span>起</span>\n' +
+                        '          </p>\n' +
+                        '          <p><a href="route_detail.html?rid='+ele.rid+'">查看详情</a></p>\n' +
+                        '       </div>\n' +
+                        '</li>';
+                }
+                $("#routeListUl").html(lis);
+                $("#totalPage").html(data.totalPage);
+                $("#totalCount").html(data.totalCount);
+                var pageLi="";
+                var fistPage='<li><a href="route_list.html?cid='+cid+'&currentPage=1&rname='+rname+'">首页</a></li>';
+                var beforePage='<li class="threeword"><a href="route_list.html?cid='+cid+'&currentPage='+(data.currentPage-1)+'&rname='+rname+'">上一页</a></li>';
+                pageLi+=fistPage;
+                if (data.currentPage!=1){
+                    pageLi+=beforePage;
+                }
+                var totalpage=data.totalPage;
+                var cu=data.currentPage;
+                var start;
+                var end=totalpage;
+                if (end<10){
+                    start=1;
+                }else {
+                    start=cu-5;
+                    end=cu+4;
+                    if (start<1){
+                        start=1;
+                        end=10;
+                    }
+                    if(end>totalpage){
+                        start=totalpage-9;
+                        end=totalpage;
+                    }
+                }
+                for (var i=start;i<=end;i++){
+                    if(i==cu){
+                        pageLi+='<li class="curPage"><a href="route_list.html?cid='+cid+'&currentPage='+i+'&rname='+rname+'">'+i+'</a></li>'
+                    }else {
+                        pageLi+='<li><a href="route_list.html?cid='+cid+'&currentPage='+i+'&rname='+rname+'">'+i+'</a></li>'
+                    }
+                }
+                var nextPage='<li class="threeword"><a href="route_list.html?cid='+cid+'&currentPage='+(data.currentPage+1)+'&rname='+rname+'">下一页</a></li>';
+                var lastPage='<li class="threeword"><a href="route_list.html?cid='+cid+'&currentPage='+data.totalPage+'&rname='+rname+'">末页</a></li>';
+                if(currentPage!=data.totalPage){
+                    pageLi+=nextPage;
+                }
+                pageLi+=lastPage;
+                $("#pageUl").html(pageLi);
+            },"json");
+            $.post("route/getRecommendation",{"cid":cid},function (data) {
+                var lis="";
+                for (var i=0;i<data.length;i++){
+                    var ele=data[i];
+                    lis+='<li>\n' +
+                        '   <a href="route_detail.html?rid='+ele.rid+'">\n'+
+                        '    <div class="left"><img width="121px" src="'+ele.rimage+'" alt=""></div>\n' +
+                        '    <div class="right">\n' +
+                        '           <p>'+ele.rname+'</p>\n' +
+                        '           <p>网付价<span>&yen;<span>'+ele.price+'</span>起</span>\n' +
+                        '           </p>\n' +
+                        '    </div>\n' +
+                        '  </a>\n'+
+                        ' </li>';
+                }
+                lis+='';
+                $("#routeRecommendationUl").html(lis);
+            },"json");
+        })
+    </script>
+</head>
+<body>
+<!--引入头部-->
+<div id="header"></div>
+    <div class="page_one">
+        <div class="contant">
+            <a href=""></a>
+            <div class="crumbs">
+                <img src="images/search.png" alt="">
+                <p>中软旅行><span>搜索结果</span></p>
+            </div>
+            <div class="xinxi clearfix">
+                <div class="left">
+                    <div class="header">
+                        <span>商品信息</span>
+                        <span class="jg">价格</span>
+                    </div>
+                    <ul id="routeListUl"></ul>
+                    <div class="page_num_inf">
+                        <i></i> 共
+                        <span id="totalPage"></span>页<span id="totalCount"></span>条
+                    </div>
+                    <div class="pageNum">
+                        <ul id="pageUl"></ul>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="top">
+                        <div class="hot">HOT</div>
+                        <span>热门推荐</span>
+                    </div>
+                    <ul id="routeRecommendationUl"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--引入脚部-->
+    <div id="footer"></div>
+    <!--导入布局js，共享header和footer-->
+    <script type="text/javascript" src="js/include.js"></script>
+</body>
+</html>
